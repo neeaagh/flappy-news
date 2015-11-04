@@ -20,7 +20,12 @@ function($stateProvider, $urlRouterProvider) {
     .state('posts', {
       url: '/posts/{id}',
       templateUrl: '/posts.html',
-      controller: 'PostsCtrl'
+      controller: 'PostsCtrl',
+      resolve: {
+        post: ['$stateParams', 'posts', function($stateParams, posts) {
+          return posts.get($stateParams.id);
+        }]
+      }
     });
 
   $urlRouterProvider.otherwise('home');
@@ -33,7 +38,7 @@ function($scope, posts){
   $scope.test = 'Hello world!';
   $scope.posts = posts.posts;
   $scope.addPost = function(){
-  	if (!$scope.title || $scope.title === '') { return; };
+  	if (!$scope.title || $scope.title === '') { return; }
   	posts.create({
   		title: $scope.title,
   		link: $scope.link
@@ -48,10 +53,10 @@ function($scope, posts){
 
 app.controller('PostsCtrl', [
   '$scope',
-  '$stateParams',
   'posts',
-  function($scope, $stateParams, posts){
-    $scope.post = posts.posts[$stateParams.id];
+  'post',
+  function($scope, posts, post) {
+    $scope.post = post;
     $scope.addComment = function(){
       if($scope.body === '') { return; }
       if (typeof $scope.post.comments == 'undefined'){
@@ -91,5 +96,11 @@ app.factory('posts', ['$http', function($http) {
         post.upvotes += 1;
       });
   };
-	return o;
+
+  o.get = function(id) {
+    return $http.get('/posts/' + id).then(function(res) {
+      return res.data;
+    });
+  };
+	return o; // is this necessary
 }]);
