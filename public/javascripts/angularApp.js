@@ -58,19 +58,17 @@ app.controller('PostsCtrl', [
   function($scope, posts, post) {
     $scope.post = post;
     $scope.addComment = function(){
-      if($scope.body === '') { return; }
-      if (typeof $scope.post.comments == 'undefined'){
-        $scope.post.comments = [];
-      }
-      $scope.post.comments.push({
+      if ($scope.body === '') { return; }
+      posts.addComment(post._id, {
         body: $scope.body,
-        author: 'user',
-        upvotes: 0
+        author: 'user'
+      }).success(function(comment) {
+        $scope.post.comments.push(comment);
       });
       $scope.body = '';
     };
     $scope.incrementUpvotes = function(comment) {
-      comment.upvotes++;
+      posts.upvoteComment(post, comment);
     };
 }]);
 
@@ -101,6 +99,17 @@ app.factory('posts', ['$http', function($http) {
     return $http.get('/posts/' + id).then(function(res) {
       return res.data;
     });
+  };
+
+  o.addComment = function(id, comment) {
+    return $http.post('/posts/' + id + '/comments', comment);
+  };
+
+  o.upvoteComment = function(post, comment) {
+    return $http.put('/posts/' + post._id + '/comments/' + comment._id + '/upvote')
+      .success(function(data) {
+        comment.upvotes += 1;
+      });
   };
 	return o; // is this necessary
 }]);
