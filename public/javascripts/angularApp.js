@@ -15,8 +15,7 @@ function($stateProvider, $urlRouterProvider) {
           return posts.getAll();
         }]
       }
-    });
-  $stateProvider
+    })
     .state('posts', {
       url: '/posts/{id}',
       templateUrl: '/posts.html',
@@ -26,6 +25,26 @@ function($stateProvider, $urlRouterProvider) {
           return posts.get($stateParams.id);
         }]
       }
+    })
+    .state('login', {
+      url: '/login',
+      templateUrl: '/login.html',
+      controller: 'AuthCtrl',
+      onEnter: ['$state', 'auth', function($state, auth) {
+        if(auth.isLoggedIn()) {
+          $state.go('hmoe');
+        }
+      }]
+    })
+    .state('register', {
+      url: '/register',
+      templateUrl: '/register.html',
+      controller: 'AuthCtrl',
+      onEnter: ['$state', 'auth', function($state, auth) {
+        if(auth.isLoggedIn()) {
+          $state.go('home');
+        }
+      }]
     });
 
   $urlRouterProvider.otherwise('home');
@@ -50,6 +69,15 @@ function($scope, posts){
   	posts.upvote(post);
   };
 }]);
+
+app.controller('NavCtrl', [
+  '$scope',
+  'auth',
+  function($scope, auth) {
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.currentUser = auth.currentUser;
+    $scope.logOut = auth.logOut;
+  }]);
 
 app.controller('PostsCtrl', [
   '$scope',
